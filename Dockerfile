@@ -15,7 +15,9 @@ WORKDIR /build/ui
 COPY ui/package.json ui/package-lock.json ./
 RUN npm ci
 COPY ui/ ./
-RUN npm run build
+# Tests run here, not only in Actions. On main this image build is the single
+# build AND the test gate — a red suite fails the build and nothing deploys.
+RUN npm test && npm run build
 
 # ---- build Frank ----------------------------------------------------------
 FROM node:22-slim AS server-build
@@ -23,7 +25,7 @@ WORKDIR /build/server
 COPY server/package.json server/package-lock.json ./
 RUN npm ci
 COPY server/ ./
-RUN npm run build
+RUN npm test && npm run build
 
 # ---- runtime --------------------------------------------------------------
 FROM node:22-slim AS runtime

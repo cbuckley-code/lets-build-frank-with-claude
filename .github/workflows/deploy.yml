@@ -28,8 +28,12 @@ permissions:
   contents: read
 
 jobs:
+  # These two run on PULL REQUESTS only — fast feedback with no Azure involved.
+  # On main they are skipped: the Docker build compiles and tests both packages
+  # exactly once, so running them here as well was ~140s of duplicated work.
   build-server:
     name: Build & test Frank (server/)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,6 +47,7 @@ jobs:
 
   build-ui:
     name: Build & test console (ui/)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +62,9 @@ jobs:
   deploy:
     name: Deploy Frank -> Azure Container Apps
     if: github.event_name != 'pull_request'
-    needs: [build-server, build-ui]     # test gate; the image rebuilds both
+    # No `needs:` — the build jobs are skipped on main by design, and a job
+    # that needs a skipped job is itself skipped. The gate moved into the
+    # Dockerfile, which runs `npm test` in both build stages.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
