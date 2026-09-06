@@ -61,9 +61,19 @@ repository is not a reviewer. Least privilege applies to your agents too.
 
 ## Try this
 
-1. Ask *"is ADR-007 ready to accept?"* — never naming the reviewer.
-2. Open `agents/adr-reviewer.md`, replace the description with
-   `description: Information about ADRs.`, and ask again.
-3. Put the good description back.
+1. Run `/adr <some decision>`. The command names the reviewer explicitly, so
+   delegation happens every time — watch `adr-reviewer` run and return its
+   findings.
+2. Now ask *"is ADR-006 ready to accept?"* without naming the reviewer. It may
+   or may not delegate. **That is the lesson, not a bug.**
+3. Open `agents/adr-reviewer.md` and read its `description` again with that in
+   mind.
 
-That is the whole lesson in three steps.
+**A description is a routing hint to a probabilistic model, not a dispatch
+rule.** When you need delegation to happen reliably, name the agent — in a
+command, or in `CLAUDE.md`. When you want the model to choose, write a
+description that names the *situation*, and accept that it is a strong
+influence rather than a guarantee.
+
+(ADR-007 is the repo's example of a **Rejected** decision — authentication was
+considered and declined. Read it for the reasoning, not as a live proposal.)
