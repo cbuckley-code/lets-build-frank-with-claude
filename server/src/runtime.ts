@@ -20,3 +20,9 @@ export const STARTED_AT: Date = new Date();
 export function uptimeSeconds(now: Date = new Date()): number {
   return Math.max(0, Math.round((now.getTime() - STARTED_AT.getTime()) / 1000));
 }
+
+/** The Node.js runtime executing this process, e.g. "v22.11.0". */
+export const NODE_VERSION: string = process.version;
+
+/** Major version of that runtime, e.g. 22 — the number package.json's `engines` pins. */
+export const NODE_MAJOR: number = Number.parseInt(process.versions.node, 10);

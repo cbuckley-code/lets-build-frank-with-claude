@@ -179,3 +179,66 @@ describe("MCP over Streamable HTTP", () => {
     await Promise.all(clients.map((client) => client.close()));
   });
 });
+
+describe("get_node_version over the wire", () => {
+  it("is advertised as a read-only tool that takes no arguments", async () => {
+    const client = await connect();
+    const { tools } = await client.listTools();
+
+    const tool = tools.find((candidate) => candidate.name === "get_node_version");
+    expect(tool).toBeDefined();
+    expect(tool?.description).toBeTruthy();
+    expect(tool?.annotations?.readOnlyHint).toBe(true);
+
+    const schema = tool?.inputSchema as {
+      properties?: Record<string, unknown>;
+      additionalProperties?: boolean;
+    };
+    expect(schema.properties ?? {}).toEqual({});
+    expect(schema.additionalProperties).toBe(false);
+
+    await client.close();
+  });
+
+  it("returns the running Node version as structured JSON", async () => {
+    const client = await connect();
+    const result = (await client.callTool({ name: "get_node_version" })) as CallToolResult;
+
+    expect(result.isError).toBeFalsy();
+
+    const payload = result.structuredContent as {
+      summary: string;
+      nodeVersion: string;
+      major: number;
+      v8Version: string;
+      platform: string;
+      arch: string;
+    };
+
+    // The test runs in the same process as the server, so this is exact.
+    expect(payload.nodeVersion).toBe(process.version);
+    expect(payload.major).toBe(Number.parseInt(process.versions.node, 10));
+    expect(payload.v8Version).toBe(process.versions.v8);
+    expect(payload.platform).toBe(process.platform);
+    expect(payload.arch).toBe(process.arch);
+    expect(payload.summary).toContain(process.version);
+
+    const [block] = result.content;
+    expect(block?.type).toBe("text");
+    expect(JSON.parse(String(block?.text))).toEqual(payload);
+
+    await client.close();
+  });
+
+  it("rejects an unknown input field with isError and no stack trace", async () => {
+    const client = await connect();
+    const result = (await client.callTool({
+      name: "get_node_version",
+      arguments: { verbose: true },
+    })) as CallToolResult;
+
+    expect(result.isError).toBe(true);
+    expect(looksLikeAStackTrace(String(result.content[0]?.text ?? ""))).toBe(false);
+    await client.close();
+  });
+});

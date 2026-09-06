@@ -96,11 +96,12 @@ src/
   app.ts             Express app: POST /mcp, GET /healthz, console + SPA fallback
   frank.ts           builds the McpServer and registers the tools
   config.ts          environment variables -> Config
-  runtime.ts         version (from package.json) and uptime
+  runtime.ts         version (from package.json), Node version, and uptime
   result.ts          ADR-002's output contract: ok() / failure()
   tool-arguments.ts  normalises tools/call requests that omit `arguments`
   tools/
-    define.ts        defineTool — where ADR-002 is enforced in code
-    get-status.ts    the first tool
-    index.ts         the registry
+    define.ts            defineTool — where ADR-002 is enforced in code
+    get-status.ts        the first tool
+    get-node-version.ts  the Node runtime this process is running on
+    index.ts             the registry
 ```
