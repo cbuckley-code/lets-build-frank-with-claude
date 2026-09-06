@@ -1,6 +1,6 @@
 # ADR-006: Classroom deploys use short-lived client secrets and one container
 
-**Status:** Proposed — **partially supersedes ADR-004 and ADR-005**
+**Status:** Proposed — **partially supersedes ADR-003, ADR-004 and ADR-005**
 **Date:** 2026-09
 
 **Supersession, precisely.** Replaces ADR-004's **Static Web Apps hosting and
@@ -10,6 +10,14 @@ its system-assigned managed identity with no role assignments, scale-to-zero
 single region. Replaces ADR-005's **Azure authentication, secret, and
 deployment-target decisions**; its PR build-and-test behaviour remains in force
 except where stated below.
+
+Replaces one clause of **ADR-003**: *"the UI calls Frank's Streamable HTTP
+endpoint directly (`VITE_FRANK_URL` at build time). Frank's CORS allowlist
+admits the UI's origin."* Under this ADR the console is served by Frank at `/`
+and calls `/mcp` **relatively** — there is no `VITE_FRANK_URL` and no CORS
+configuration at all, because there is no cross-origin request. The rest of
+ADR-003 remains in force, including React + Vite + Cloudscape, both pages, the
+schema-driven forms, and *"the UI holds no secrets"*.
 
 ADR-004 stays the authoritative source for its surviving decisions. They are
 deliberately not restated here — duplicated rules drift.

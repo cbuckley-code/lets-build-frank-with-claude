@@ -1,6 +1,8 @@
 # ADR-003: The console — React + Vite + Cloudscape
 
-**Status:** Accepted
+**Status:** Accepted — **partially superseded by ADR-006** (the build-time
+`VITE_FRANK_URL` + CORS wiring only; the stack, pages, schema-driven forms and
+"the UI holds no secrets" all remain in force)
 
 ## Context
 
