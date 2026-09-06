@@ -1,12 +1,19 @@
-# Build → test → deploy pipeline for Frank + the Cloudscape console.
-# Implements ADR-005 (OIDC to Azure) against the hosting shape in ADR-004.
+# Build -> test -> deploy. ONE container serving both the MCP server and the
+# Cloudscape console (ADR-009, which supersedes ADR-004 and ADR-005).
 #
 # Fork setup (each student, once):
-#   Secrets  : AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
-#              AZURE_STATIC_WEB_APPS_API_TOKEN
-#   Variables: AZURE_RESOURCE_GROUP, CONTAINER_APP_NAME, SWA_NAME, FRANK_URL
+#   Secret   : AZURE_CREDENTIALS      <- the seat card JSON, one secret
+#   Variables: AZURE_RESOURCE_GROUP, CONTAINER_APP_NAME, ACR_NAME, CONTAINERAPPS_ENV
 #
-# PRs build & test only. Pushes to main also deploy.
+# Deliberately NOT here any more, and why:
+#   - OIDC / id-token: write        -> needs a per-fork federated credential,
+#                                     impossible for unknown attendees (ADR-009)
+#   - environment: production       -> changed the OIDC subject claim and broke
+#                                     federation; also gates deploys on approval
+#   - AZURE_STATIC_WEB_APPS_API_TOKEN, SWA_NAME, FRANK_URL, VITE_FRANK_URL
+#                                   -> Static Web Apps is gone; one target now
+#
+# PRs build and test only. Pushes to main deploy.
 
 name: build-and-deploy
 
@@ -18,7 +25,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write   # OIDC token for azure/login (ADR-005)
   contents: read
 
 jobs:
@@ -32,12 +38,8 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: server/package-lock.json
-      - name: Install, test, build
-        working-directory: server
-        run: |
-          npm ci
-          npm test
-          npm run build
+      - working-directory: server
+        run: npm ci && npm test && npm run build
 
   build-ui:
     name: Build & test console (ui/)
@@ -49,57 +51,93 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: ui/package-lock.json
-      - name: Install, test, build
-        working-directory: ui
-        env:
-          VITE_FRANK_URL: ${{ vars.FRANK_URL }}
-        run: |
-          npm ci
-          npm test
-          npm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ui-dist
-          path: ui/dist
+      - working-directory: ui
+        run: npm ci && npm test && npm run build
 
-  deploy-server:
-    name: Deploy Frank → Azure Container Apps
+  deploy:
+    name: Deploy Frank -> Azure Container Apps
     if: github.event_name != 'pull_request'
-    needs: build-server
+    needs: [build-server, build-ui]     # test gate; the image rebuilds both
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - uses: actions/checkout@v4
-      - name: Azure login (OIDC — no stored password, per ADR-005)
+
+      # GitHub expands a missing secret or variable to an EMPTY STRING, and az
+      # then fails with something unrelated-looking. Fail loudly and early
+      # instead — this is the single most common first-run mistake.
+      - name: Preflight — fork configuration
+        env:
+          CREDS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          fail=0
+          if [ -z "$CREDS" ]; then
+            echo "::error::Secret AZURE_CREDENTIALS is missing or empty. Paste the seat-card JSON."
+            fail=1
+          elif ! echo "$CREDS" | python3 -c 'import json,sys; d=json.load(sys.stdin); [d[k] for k in ("clientId","clientSecret","subscriptionId","tenantId")]' 2>/dev/null; then
+            echo "::error::AZURE_CREDENTIALS is not valid JSON with clientId/clientSecret/subscriptionId/tenantId. Re-copy the whole block including the braces."
+            fail=1
+          fi
+          [ -z "${{ vars.AZURE_RESOURCE_GROUP }}" ] && { echo "::error::Variable AZURE_RESOURCE_GROUP is not set."; fail=1; }
+          [ -z "${{ vars.CONTAINER_APP_NAME }}" ]  && { echo "::error::Variable CONTAINER_APP_NAME is not set."; fail=1; }
+          [ -z "${{ vars.ACR_NAME }}" ]            && { echo "::error::Variable ACR_NAME is not set."; fail=1; }
+          [ -z "${{ vars.CONTAINERAPPS_ENV }}" ]   && { echo "::error::Variable CONTAINERAPPS_ENV is not set."; fail=1; }
+          [ "$fail" = 1 ] && { echo "See your seat card, or re-run scripts/setup-seat.sh"; exit 1; }
+          echo "fork configuration looks good"
+
+      - name: Azure login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Build & deploy container app from source
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Two explicit steps instead of `az containerapp up --source .`.
+      #
+      # `up --source` crashes on some azure-cli builds:
+      #   _utils.py: platform_os = OS.linux.value
+      #   AttributeError: 'NoneType' object has no attribute 'linux'
+      # (the bundled containerregistry SDK models don't expose OS for 'runs').
+      # Installing the containerapp extension does NOT help — it calls the same
+      # core function. Building and deploying separately avoids that path, and
+      # each half fails legibly on its own.
+      - name: Build the image in ACR
         run: |
-          az containerapp up \
+          set -euo pipefail
+          az acr build \
+            --registry "${{ vars.ACR_NAME }}" \
+            --image "frank:${{ github.sha }}" \
+            --file Dockerfile .
+
+      - name: Create or update the Container App
+        run: |
+          set -euo pipefail
+          APP="${{ vars.CONTAINER_APP_NAME }}"
+          RG="${{ vars.AZURE_RESOURCE_GROUP }}"
+          ACR="${{ vars.ACR_NAME }}"
+          IMAGE="$ACR.azurecr.io/frank:${{ github.sha }}"
+
+          if az containerapp show --name "$APP" --resource-group "$RG" >/dev/null 2>&1; then
+            echo "updating existing app"
+            az containerapp update --name "$APP" --resource-group "$RG" --image "$IMAGE"
+          else
+            echo "creating app"
+            PW=$(az acr credential show --name "$ACR" --query 'passwords[0].value' -o tsv)
+            az containerapp create \
+              --name "$APP" --resource-group "$RG" \
+              --environment "${{ vars.CONTAINERAPPS_ENV }}" \
+              --image "$IMAGE" \
+              --target-port 3000 --ingress external \
+              --registry-server "$ACR.azurecr.io" \
+              --registry-username "$ACR" --registry-password "$PW" \
+              --min-replicas 0 --max-replicas 1
+          fi
+
+      - name: Show Frank's URL
+        run: |
+          FQDN=$(az containerapp show \
             --name "${{ vars.CONTAINER_APP_NAME }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
-            --source ./server \
-            --ingress external \
-            --target-port 3000
-
-  deploy-ui:
-    name: Deploy console → Azure Static Web Apps
-    if: github.event_name != 'pull_request'
-    needs: build-ui
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: ui-dist
-          path: dist
-      - name: Deploy static site
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          action: upload
-          app_location: dist
-          skip_app_build: true
+            --query properties.configuration.ingress.fqdn -o tsv)
+          echo "### Frank is live" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Console: https://$FQDN/" >> $GITHUB_STEP_SUMMARY
+          echo "- MCP:     https://$FQDN/mcp" >> $GITHUB_STEP_SUMMARY
+          echo "- Health:  https://$FQDN/healthz" >> $GITHUB_STEP_SUMMARY

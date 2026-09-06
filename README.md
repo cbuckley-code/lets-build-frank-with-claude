@@ -57,7 +57,7 @@ and have the agents implement them.
 | **GitHub account** | You'll fork this repo and run its Actions pipeline |
 | **GitHub Copilot subscription** | Powers the Copilot CLI, our second agent |
 | **Azure subscription** | Frank's home. A personal/dev subscription is fine |
-| **Azure deploy credentials** | A service principal (or OIDC federation) scoped to one resource group, added as secrets **in your fork** — see below |
+| **A seat card** | Handed to you in class. One credential, scoped to one resource group, expiring in two days. You do not need your own Azure subscription |
 | **Claude account** | Sign-in for Claude Desktop, Claude Code, and mobile |
 | **Anthropic API key** | We generate this together in the afternoon — don't worry about it yet |
 
@@ -82,12 +82,17 @@ Also install:
 Verify before class:
 
 ```bash
+node --version     # must be 22+. A broken node silently breaks `copilot`
+npm --version
 claude --version
 copilot --version
 herdr --version
 gh auth status
-az login    # Azure CLI, logged into your subscription
+az login           # Azure CLI, logged into your subscription
 ```
+
+If `copilot --version` says "not found", check `node --version` **first** — a
+broken Node install is the usual cause and the error message will not say so.
 
 ## Getting started (we do this together in class)
 
@@ -103,13 +108,20 @@ claude
 > /init
 ```
 
-Then, in **your fork's** GitHub settings → *Secrets and variables → Actions*,
-add the Azure credentials the pipeline needs (see
-[ADR-005](docs/adr/ADR-005-github-actions-deployment.md)):
+Then configure your fork from the **seat card** you were handed
+(see [ADR-008](docs/adr/ADR-008-classroom-credentials.md)):
 
-- `AZURE_CLIENT_ID`
-- `AZURE_TENANT_ID`
-- `AZURE_SUBSCRIPTION_ID`
+```bash
+./scripts/setup-seat.sh path/to/seatNN.txt
+```
+
+That sets one secret (`AZURE_CREDENTIALS`) and four variables
+(`AZURE_RESOURCE_GROUP`, `CONTAINER_APP_NAME`, `ACR_NAME`, `CONTAINERAPPS_ENV`).
+You can do it by hand in *Settings → Secrets and variables → Actions* instead.
+
+> Your seat credential is a **client secret with a two-day expiry**, scoped to
+> **one resource group**. That is a deliberate classroom trade-off, not best
+> practice — ADR-008 says exactly what it costs and why OIDC could not be used.
 
 > **Never** commit credentials to the repo, paste them into prompts, or put them
 > in `CLAUDE.md` or an ADR. Secrets live in GitHub Actions secrets and Azure —
@@ -124,9 +136,14 @@ add the Azure credentials the pipeline needs (see
 │   └── adr/                   ← the decisions Frank is built from
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml         ← build → test → deploy pipeline (you feed it secrets)
+│       └── deploy.yml         ← build → test → deploy ONE container (ADR-008)
+├── Dockerfile                 ← one image: Frank + the console (ADR-008)
+├── scripts/setup-seat.sh      ← configures your fork from the seat card
 ├── server/                    ← Frank's MCP server   (built in class, per ADR-001/002)
+│                                 listens on PORT, default 3000 — the pipeline
+│                                 deploys with --target-port 3000
 ├── ui/                        ← Cloudscape console   (built in class, per ADR-003)
+│                                 served BY Frank at /, so it calls /mcp relatively
 ├── CLAUDE.md                  ← created by /init, then curated by YOU
 └── .claude/                   ← skills, rules, commands (authored in class)
 ```
@@ -142,8 +159,9 @@ That's the point of the course.
 | [ADR-001](docs/adr/ADR-001-mcp-server-stack.md) | Frank's stack: TypeScript + official MCP SDK, Streamable HTTP | Accepted |
 | [ADR-002](docs/adr/ADR-002-mcp-tool-conventions.md) | Tool naming, schemas, and the read-only rule | Accepted |
 | [ADR-003](docs/adr/ADR-003-cloudscape-ui.md) | The console: React + Vite + Cloudscape | Accepted |
-| [ADR-004](docs/adr/ADR-004-azure-hosting.md) | Hosting: Container Apps (Frank) + Static Web Apps (UI) | Accepted |
-| [ADR-005](docs/adr/ADR-005-github-actions-deployment.md) | Deployment: GitHub Actions with OIDC to Azure | Accepted |
+| [ADR-004](docs/adr/ADR-004-azure-hosting.md) | Hosting: Azure Container Apps | Accepted — partly superseded by 008 |
+| [ADR-005](docs/adr/ADR-005-github-actions-deployment.md) | Deployment: GitHub Actions | Accepted — partly superseded by 008 |
+| [ADR-008](docs/adr/ADR-008-classroom-credentials.md) | Classroom credentials + one container | Proposed |
 | ADR-006 | Connect Frank to the GitHub pipeline | **You write this in class** |
 | ADR-007 | Grant Frank read access to his Azure environment | **You write this in class** |
 
@@ -153,7 +171,10 @@ That's the point of the course.
 - Deploy identity is scoped to **one resource group**.
 - Frank **reads** Azure; he does not write. Expansions of scope require an ADR.
 - Claude Code permission prompts stay **on** for destructive actions.
-- Branch protection on `main`; agents propose, cross-model review helps, a human merges.
+- **Turn on branch protection yourself** — *Settings → Branches → Add rule* for
+  `main`, requiring a pull request. **A fork does not inherit the upstream
+  rule**, and pushing to `main` deploys to Azure. Do this before your first push.
+  Agents propose, cross-model review helps, a human merges.
 
 ## During class, you will
 
@@ -161,7 +182,7 @@ That's the point of the course.
 2. Fork this repo, run `/init`, and curate `CLAUDE.md` into real team config.
 3. Author a skill, a rules entry, and a `/adr` command in `.claude/`.
 4. Draft ADR-006 and ADR-007 — Claude drafts, Copilot attacks, you decide.
-5. Build Frank and the UI, push, and watch the pipeline ship them to Azure.
+5. Build Frank and the console, push once, and watch the pipeline ship **one container** to Azure.
 6. Add Frank as a connector in Claude Desktop and ask him about his own world.
 
 Bring a laptop, bring credentials, bring skepticism. The agents will supply the

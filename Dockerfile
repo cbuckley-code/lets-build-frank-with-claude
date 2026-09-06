@@ -33,9 +33,9 @@ WORKDIR /app
 COPY server/package.json server/package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
-COPY --from=server-build /build/server/dist ./dist
+COPY --chown=node:node --from=server-build /build/server/dist ./dist
 # config.ts resolves the console as `<package root>/public`, which is this.
-COPY --from=ui-build /build/ui/dist ./public
+COPY --chown=node:node --from=ui-build /build/ui/dist ./public
 
 # ADR-004 gives Frank a managed identity, not root.
 USER node
@@ -44,6 +44,10 @@ USER node
 ENV PORT=3000
 EXPOSE 3000
 
+# NOTE: Azure Container Apps does NOT use this HEALTHCHECK as its platform
+# liveness probe — without an explicit ACA probe you get default TCP probing on
+# the ingress port. This is for local `docker run` and as executable
+# documentation of what "healthy" means.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
