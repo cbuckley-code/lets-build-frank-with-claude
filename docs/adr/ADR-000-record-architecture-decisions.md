@@ -32,7 +32,14 @@ Workflow:
 4. Implementation prompts reference the ADR by number: *"implement ADR-006."*
 
 An ADR is immutable once **Accepted**. To change course, write a new ADR that
-**Supersedes** the old one.
+**Supersedes** the old one — wholly, or naming the exact clauses it replaces
+while the rest stays in force.
+
+One narrow exception: the **Status line** of a superseded ADR may be updated to
+record that it was superseded, and by which ADR. That is lifecycle metadata, not
+a rewrite of the decision. Body text, date, rationale, and consequences stay
+exactly as they were — the point of an ADR is that you can read what was decided
+and why, at the time.
 
 ## Consequences
 
