@@ -29,7 +29,7 @@ Workflow:
 1. Draft the ADR with Claude (`/adr` command scaffolds it).
 2. Have Copilot attack the draft: edge cases, security holes, simpler alternatives.
 3. A human decides; the ADR is committed via PR.
-4. Implementation prompts reference the ADR by number: *"implement ADR-006."*
+4. Implementation prompts reference the ADR by number: *"implement ADR-008."*
 
 An ADR is immutable once **Accepted**. To change course, write a new ADR that
 **Supersedes** the old one — wholly, or naming the exact clauses it replaces

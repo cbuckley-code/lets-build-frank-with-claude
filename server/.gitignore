@@ -5,5 +5,5 @@ coverage/
 .env
 .env.*
 
-# Built by ui/ and copied in by the root Dockerfile (ADR-009).
+# Built by ui/ and copied in by the root Dockerfile (ADR-006).
 public/

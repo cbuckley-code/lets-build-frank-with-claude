@@ -1,8 +1,10 @@
-# Frank and his console in one image (ADR-009).
+# Frank and his console in one image (ADR-006).
 #
-# Build context is the repository root, not server/ — `az containerapp up
-# --source ./server` cannot reach ui/, which is why ADR-009 moves this file up
-# here and deploys with `--source .`.
+# Build context is the repository root, not server/ — a server/-scoped build
+# cannot reach ui/, which is why ADR-006 moves this file up here. The pipeline
+# builds it with `az acr build --file Dockerfile .`; `az containerapp up
+# --source` is deliberately not used (it crashes on some azure-cli builds —
+# see the note in .github/workflows/deploy.yml).
 #
 #   ui/dist  ->  /app/public   served at /
 #   server/  ->  /app/dist     MCP at POST /mcp, health at GET /healthz

@@ -109,7 +109,7 @@ claude
 ```
 
 Then configure your fork from the **seat card** you were handed
-(see [ADR-008](docs/adr/ADR-008-classroom-credentials.md)):
+(see [ADR-006](docs/adr/ADR-006-classroom-credentials.md)):
 
 ```bash
 ./scripts/setup-seat.sh path/to/seatNN.txt
@@ -121,7 +121,7 @@ You can do it by hand in *Settings → Secrets and variables → Actions* instea
 
 > Your seat credential is a **client secret with a two-day expiry**, scoped to
 > **one resource group**. That is a deliberate classroom trade-off, not best
-> practice — ADR-008 says exactly what it costs and why OIDC could not be used.
+> practice — ADR-006 says exactly what it costs and why OIDC could not be used.
 
 > **Never** commit credentials to the repo, paste them into prompts, or put them
 > in `CLAUDE.md` or an ADR. Secrets live in GitHub Actions secrets and Azure —
@@ -136,8 +136,8 @@ You can do it by hand in *Settings → Secrets and variables → Actions* instea
 │   └── adr/                   ← the decisions Frank is built from
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml         ← build → test → deploy ONE container (ADR-008)
-├── Dockerfile                 ← one image: Frank + the console (ADR-008)
+│       └── deploy.yml         ← build → test → deploy ONE container (ADR-006)
+├── Dockerfile                 ← one image: Frank + the console (ADR-006)
 ├── scripts/setup-seat.sh      ← configures your fork from the seat card
 ├── server/                    ← Frank's MCP server   (built in class, per ADR-001/002)
 │                                 listens on PORT, default 3000 — the pipeline
@@ -158,12 +158,13 @@ That's the point of the course.
 | [ADR-000](docs/adr/ADR-000-record-architecture-decisions.md) | We record decisions as ADRs (and why that matters for agents) | Accepted |
 | [ADR-001](docs/adr/ADR-001-mcp-server-stack.md) | Frank's stack: TypeScript + official MCP SDK, Streamable HTTP | Accepted |
 | [ADR-002](docs/adr/ADR-002-mcp-tool-conventions.md) | Tool naming, schemas, and the read-only rule | Accepted |
-| [ADR-003](docs/adr/ADR-003-cloudscape-ui.md) | The console: React + Vite + Cloudscape | Accepted |
-| [ADR-004](docs/adr/ADR-004-azure-hosting.md) | Hosting: Azure Container Apps | Accepted — partly superseded by 008 |
-| [ADR-005](docs/adr/ADR-005-github-actions-deployment.md) | Deployment: GitHub Actions | Accepted — partly superseded by 008 |
-| [ADR-008](docs/adr/ADR-008-classroom-credentials.md) | Classroom credentials + one container | Proposed |
-| ADR-006 | Connect Frank to the GitHub pipeline | **You write this in class** |
-| ADR-007 | Grant Frank read access to his Azure environment | **You write this in class** |
+| [ADR-003](docs/adr/ADR-003-cloudscape-ui.md) | The console: React + Vite + Cloudscape | Accepted — partly superseded by 007 |
+| [ADR-004](docs/adr/ADR-004-azure-hosting.md) | Hosting: Azure Container Apps | Accepted — partly superseded by 006 |
+| [ADR-005](docs/adr/ADR-005-github-actions-deployment.md) | Deployment: GitHub Actions | Accepted — partly superseded by 006 |
+| [ADR-006](docs/adr/ADR-006-classroom-credentials.md) | Classroom credentials + one container | Proposed |
+| [ADR-007](docs/adr/ADR-007-mcp-endpoint-authentication.md) | MCP endpoint requires caller authentication (partly supersedes 003) | Proposed |
+| ADR-008 | Connect Frank to the GitHub pipeline | **You write this in class** |
+| ADR-009 | Grant Frank read access to his Azure environment | **You write this in class** |
 
 ## Ground rules (security)
 
@@ -181,7 +182,7 @@ That's the point of the course.
 1. Tour and configure every Claude surface (Desktop, CLI + herdr, VS Code, mobile).
 2. Fork this repo, run `/init`, and curate `CLAUDE.md` into real team config.
 3. Author a skill, a rules entry, and a `/adr` command in `.claude/`.
-4. Draft ADR-006 and ADR-007 — Claude drafts, Copilot attacks, you decide.
+4. Draft ADR-008 and ADR-009 — Claude drafts, Copilot attacks, you decide.
 5. Build Frank and the console, push once, and watch the pipeline ship **one container** to Azure.
 6. Add Frank as a connector in Claude Desktop and ask him about his own world.
 

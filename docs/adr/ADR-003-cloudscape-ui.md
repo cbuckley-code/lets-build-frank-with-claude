@@ -1,6 +1,8 @@
 # ADR-003: The console — React + Vite + Cloudscape
 
-**Status:** Accepted
+**Status:** Accepted — **partially superseded by ADR-007** (the "UI holds no
+secrets" clause only; React + Vite + Cloudscape, the pages, and the
+schema-driven forms remain in force)
 **Date:** 2026-08
 
 ## Context

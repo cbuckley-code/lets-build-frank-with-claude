@@ -3,7 +3,7 @@
 Implements **ADR-001** (TypeScript, official MCP SDK, Streamable HTTP over
 Express) and **ADR-002** (tool naming, schemas, and the read-only rule).
 
-Under **ADR-009** this one container also serves the Cloudscape console, so
+Under **ADR-006** this one container also serves the Cloudscape console, so
 there is no CORS configuration anywhere — the console is same-origin and calls
 `/mcp` relatively.
 

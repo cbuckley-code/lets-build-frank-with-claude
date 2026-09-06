@@ -1,7 +1,7 @@
 # Frank's console
 
 React 18 + TypeScript + Vite, built with the **Cloudscape Design System**
-(ADR-003). Served by Frank himself from one container (ADR-009).
+(ADR-003). Served by Frank himself from one container (ADR-006).
 
 ## Running it
 
@@ -18,7 +18,7 @@ path* works in development and in production.
 
 ## How it talks to Frank
 
-The endpoint is the literal string `/mcp` — a relative path. Under ADR-009 the
+The endpoint is the literal string `/mcp` — a relative path. Under ADR-006 the
 console is served from Frank's own origin, so there is:
 
 - no `VITE_FRANK_URL` and no `FRANK_URL`,

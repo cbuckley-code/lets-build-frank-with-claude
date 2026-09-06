@@ -1,6 +1,6 @@
 # ADR-005: Deployment — GitHub Actions with OIDC to Azure
 
-**Status:** Accepted — **partially superseded by ADR-008** (Azure authentication, secrets,
+**Status:** Accepted — **partially superseded by ADR-006** (Azure authentication, secrets,
 and deployment target; the PR build-and-test behaviour remains in force)
 **Date:** 2026-08
 

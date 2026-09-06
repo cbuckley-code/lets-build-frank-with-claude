@@ -1,5 +1,5 @@
 /**
- * The Express app. One container serves all three surfaces (ADR-009):
+ * The Express app. One container serves all three surfaces (ADR-006):
  *
  *   GET  /healthz   health probe
  *   POST /mcp       MCP over Streamable HTTP

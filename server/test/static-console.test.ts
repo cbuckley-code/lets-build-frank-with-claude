@@ -1,5 +1,5 @@
 /**
- * ADR-009 puts the console and the API on one origin, which means a static
+ * ADR-006 puts the console and the API on one origin, which means a static
  * handler and an SPA fallback now sit in the same Express app as `/mcp`. The
  * risk that introduces is exactly one: the fallback swallowing an API request
  * and answering it with a page of HTML. These tests exist to catch that.

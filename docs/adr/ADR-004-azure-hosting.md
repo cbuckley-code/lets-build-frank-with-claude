@@ -1,6 +1,6 @@
 # ADR-004: Hosting — Container Apps for Frank, Static Web Apps for the UI
 
-**Status:** Accepted — **partially superseded by ADR-008** (Static Web Apps hosting and
+**Status:** Accepted — **partially superseded by ADR-006** (Static Web Apps hosting and
 cross-origin UI wiring only; the managed identity, scale-to-zero, `/healthz`
 probe, one-RG-per-student and single-region decisions remain in force)
 **Date:** 2026-08
@@ -25,7 +25,7 @@ in a single region chosen at class time.
   is deployed as a static site; `VITE_FRANK_URL` is injected at build time in
   the pipeline.
 - **Identity:** the Container App gets a **system-assigned managed identity** at
-  creation. It starts with **no role assignments** — ADR-007 (written in class)
+  creation. It starts with **no role assignments** — ADR-009 (written in class)
   decides exactly what read access it receives and at what scope.
 
 ## Consequences

@@ -61,7 +61,7 @@ repository is not a reviewer. Least privilege applies to your agents too.
 
 ## Try this
 
-1. Ask *"is ADR-009 ready to accept?"* — never naming the reviewer.
+1. Ask *"is ADR-007 ready to accept?"* — never naming the reviewer.
 2. Open `agents/adr-reviewer.md`, replace the description with
    `description: Information about ADRs.`, and ask again.
 3. Put the good description back.

@@ -1,5 +1,5 @@
 # Build -> test -> deploy. ONE container serving both the MCP server and the
-# Cloudscape console (ADR-009, which supersedes ADR-004 and ADR-005).
+# Cloudscape console (ADR-006, which partially supersedes ADR-004 and ADR-005).
 #
 # Fork setup (each student, once):
 #   Secret   : AZURE_CREDENTIALS      <- the seat card JSON, one secret
@@ -7,7 +7,7 @@
 #
 # Deliberately NOT here any more, and why:
 #   - OIDC / id-token: write        -> needs a per-fork federated credential,
-#                                     impossible for unknown attendees (ADR-009)
+#                                     impossible for unknown attendees (ADR-006)
 #   - environment: production       -> changed the OIDC subject claim and broke
 #                                     federation; also gates deploys on approval
 #   - AZURE_STATIC_WEB_APPS_API_TOKEN, SWA_NAME, FRANK_URL, VITE_FRANK_URL

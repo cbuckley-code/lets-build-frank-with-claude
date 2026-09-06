@@ -2,7 +2,7 @@
   "name": "frank-console",
   "version": "0.1.0",
   "private": true,
-  "description": "Frank's Cloudscape console (ADR-003), served by Frank himself (ADR-009).",
+  "description": "Frank's Cloudscape console (ADR-003), served by Frank himself (ADR-006).",
   "type": "module",
   "engines": {
     "node": ">=22"

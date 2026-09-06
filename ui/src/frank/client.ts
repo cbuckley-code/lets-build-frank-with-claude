@@ -1,7 +1,7 @@
 /**
  * The console's connection to Frank.
  *
- * The endpoint is the relative path `/mcp`. Under ADR-009 the console is served
+ * The endpoint is the relative path `/mcp`. Under ADR-006 the console is served
  * by Frank's own Express app, so there is no configured URL to inject at build
  * time and no CORS to negotiate — wherever the console is loaded from, Frank is
  * at the same origin.

@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
 /**
- * Where the built console lives. ADR-009 puts the Cloudscape build inside
+ * Where the built console lives. ADR-006 puts the Cloudscape build inside
  * Frank's own image as `server/public/`, so this resolves to the same place
  * whether Frank is running from `src/` (dev), `dist/` (build), or `/app`
  * (container).

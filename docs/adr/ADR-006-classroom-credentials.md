@@ -1,4 +1,4 @@
-# ADR-008: Classroom deploys use short-lived client secrets and one container
+# ADR-006: Classroom deploys use short-lived client secrets and one container
 
 **Status:** Proposed — **partially supersedes ADR-004 and ADR-005**
 **Date:** 2026-09
@@ -76,14 +76,14 @@ class): `Microsoft.App`, `Microsoft.OperationalInsights`,
 `Microsoft.ContainerRegistry`. **`Microsoft.Web` is no longer required** — it was
 only needed for Static Web Apps.
 
-**Privileged handoff for ADR-007.** ADR-007 grants the Container App's managed
+**Privileged handoff for ADR-009.** ADR-009 grants the Container App's managed
 identity the `Reader` role. A student **cannot** do this: it is a role
 assignment, their seat credential is Contributor-only, and the identity does not
 exist until their first deploy creates the app. Therefore the instructor runs a
 script **after** apps exist that assigns `Reader` on each seat's resource group
 to that seat's app identity. Until that runs, Frank's Azure-read tools are
 expected to fail closed with a plain-language error. **Without this handoff,
-ADR-007 is unimplementable and the closing demo does not work.**
+ADR-009 is unimplementable and the closing demo does not work.**
 
 ## Consequences
 

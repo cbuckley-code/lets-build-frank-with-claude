@@ -8,7 +8,7 @@
 MCP clients choose tools by reading their names and descriptions — the tool
 surface *is* the UX, for both humans and models. Inconsistent naming or vague
 descriptions make agents pick the wrong tool or invent parameters. And because
-Frank will later hold credentials into Azure (ADR-007, written in class), we
+Frank will later hold credentials into Azure (ADR-009, written in class), we
 need a hard rule about what tools are allowed to do.
 
 ## Decision
