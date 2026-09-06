@@ -1,0 +1,12 @@
+/*
+ * Layout glue only (ADR-003). Cloudscape owns every colour, font and control
+ * on this page; these rules exist because a <pre> of JSON needs to wrap and
+ * scroll, and nothing in the component library does that job.
+ */
+.frank-result {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 32rem;
+  overflow: auto;
+}

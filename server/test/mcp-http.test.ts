@@ -9,13 +9,19 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { createApp } from "../src/app.js";
+
+const emptyDir = mkdtempSync(path.join(tmpdir(), "frank-no-console-"));
 
 let httpServer: Server;
 let baseUrl: string;
 
 beforeAll(async () => {
-  const app = createApp({ port: 0, host: "127.0.0.1", allowedOrigins: [] });
+  // No console build here: the API must stand on its own.
+  const app = createApp({ port: 0, host: "127.0.0.1", publicDir: emptyDir });
   httpServer = await new Promise<Server>((resolve) => {
     const server = app.listen(0, "127.0.0.1", () => resolve(server));
   });

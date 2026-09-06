@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+server/public
+**/coverage
+**/*.log
+.git
+.github
+docs
+course-dev

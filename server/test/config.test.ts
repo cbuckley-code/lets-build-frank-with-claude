@@ -1,6 +1,6 @@
 /** PORT defaulting to 3000 is a contract with deploy.yml's --target-port. */
 import { describe, expect, it } from "vitest";
-import { loadConfig } from "../src/config.js";
+import { DEFAULT_PUBLIC_DIR, loadConfig } from "../src/config.js";
 
 describe("configuration from the environment", () => {
   it("defaults PORT to 3000, matching deploy.yml's --target-port", () => {
@@ -15,18 +15,13 @@ describe("configuration from the environment", () => {
     expect(loadConfig({}).host).toBe("0.0.0.0");
   });
 
-  it("allows no cross-origin callers unless told to", () => {
-    expect(loadConfig({}).allowedOrigins).toEqual([]);
+  it("defaults publicDir to the console build inside the package", () => {
+    expect(loadConfig({}).publicDir).toBe(DEFAULT_PUBLIC_DIR);
+    expect(loadConfig({}).publicDir.endsWith("public")).toBe(true);
   });
 
-  it("parses a comma-separated CORS allowlist for the console", () => {
-    const config = loadConfig({
-      CORS_ALLOWED_ORIGINS: "https://console.example.net, https://localhost:5173 ,",
-    });
-    expect(config.allowedOrigins).toEqual([
-      "https://console.example.net",
-      "https://localhost:5173",
-    ]);
+  it("takes PUBLIC_DIR from the environment", () => {
+    expect(loadConfig({ PUBLIC_DIR: "/srv/console" }).publicDir).toBe("/srv/console");
   });
 
   it("fails at boot on an unusable PORT, with a plain-language message", () => {

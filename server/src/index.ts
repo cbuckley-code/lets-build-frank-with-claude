@@ -13,9 +13,7 @@ const httpServer = app.listen(config.port, config.host, () => {
   console.log(
     `[frank] ${VERSION} listening on ${config.host}:${config.port} — MCP at POST /mcp, health at GET /healthz`,
   );
-  if (config.allowedOrigins.length > 0) {
-    console.log(`[frank] CORS allows: ${config.allowedOrigins.join(", ")}`);
-  }
+  console.log(`[frank] serving the console from ${config.publicDir}`);
 });
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {

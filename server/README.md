@@ -3,6 +3,10 @@
 Implements **ADR-001** (TypeScript, official MCP SDK, Streamable HTTP over
 Express) and **ADR-002** (tool naming, schemas, and the read-only rule).
 
+Under **ADR-009** this one container also serves the Cloudscape console, so
+there is no CORS configuration anywhere — the console is same-origin and calls
+`/mcp` relatively.
+
 ## Running it
 
 ```bash
@@ -19,6 +23,21 @@ Frank listens on `PORT` (default **3000** — the port `deploy.yml` targets).
 |---|---|---|
 | `/mcp` | `POST` | MCP over Streamable HTTP |
 | `/healthz` | `GET` | Container Apps health probe; returns 200 |
+| `/*` | `GET` | The Cloudscape console, static, from `public/` |
+
+`public/` is build output, not source: the root `Dockerfile` builds `ui/` and
+copies `ui/dist` there. Without it Frank serves the API alone and says so at
+startup — a server-only checkout still works. To try the whole thing locally:
+
+```bash
+cd ui && npm run build && cp -R dist ../server/public
+cd ../server && npm run build && npm start   # console + MCP on :3000
+```
+
+The middleware order is load-bearing: API routes are registered first, then the
+static handler, then an SPA fallback that answers only GET/HEAD and skips
+`/mcp` and `/healthz` outright. `test/static-console.test.ts` exists to prove a
+`POST /mcp` can never come back as a page of HTML.
 
 ## Configuration
 
@@ -28,7 +47,7 @@ All configuration is environment variables (ADR-001). No secrets belong here.
 |---|---|---|
 | `PORT` | `3000` | HTTP port. Must stay 3000 in Azure — `deploy.yml` uses `--target-port 3000`. |
 | `HOST` | `0.0.0.0` | Bind address. Containers must bind all interfaces. |
-| `CORS_ALLOWED_ORIGINS` | *(empty)* | Comma-separated origins allowed to call Frank from a browser — the console's origin (ADR-003). Empty means no cross-origin access. |
+| `PUBLIC_DIR` | `<package>/public` | Where the built console lives. Mainly a test seam. |
 
 ## Tests
 
@@ -74,7 +93,7 @@ container's logs.
 ```
 src/
   index.ts           entrypoint: config + listen
-  app.ts             Express app: POST /mcp, GET /healthz, CORS
+  app.ts             Express app: POST /mcp, GET /healthz, console + SPA fallback
   frank.ts           builds the McpServer and registers the tools
   config.ts          environment variables -> Config
   runtime.ts         version (from package.json) and uptime

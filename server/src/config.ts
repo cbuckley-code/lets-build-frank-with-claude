@@ -2,27 +2,33 @@
  * Configuration comes from environment variables only (ADR-001) — never from a
  * config file with values in it, and never from anything committed to the repo.
  */
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
+
+/**
+ * Where the built console lives. ADR-009 puts the Cloudscape build inside
+ * Frank's own image as `server/public/`, so this resolves to the same place
+ * whether Frank is running from `src/` (dev), `dist/` (build), or `/app`
+ * (container).
+ */
+export const DEFAULT_PUBLIC_DIR = fileURLToPath(new URL("../public", import.meta.url));
 
 const envSchema = z.object({
   /**
-   * deploy.yml runs `az containerapp up --target-port 3000`, so 3000 is not a
-   * preference — it is the contract with ADR-004's ingress.
+   * deploy.yml deploys with `--target-port 3000`, so 3000 is not a preference —
+   * it is the contract with the container's ingress.
    */
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   /** Containers must bind all interfaces to be reachable through ingress. */
   HOST: z.string().min(1).default("0.0.0.0"),
-  /**
-   * Comma-separated origins allowed to call Frank from a browser — the
-   * Cloudscape console's origin (ADR-003). Empty means no cross-origin access.
-   */
-  CORS_ALLOWED_ORIGINS: z.string().default(""),
+  /** Directory of static console files. Overridable mainly for tests. */
+  PUBLIC_DIR: z.string().min(1).optional(),
 });
 
 export interface Config {
   port: number;
   host: string;
-  allowedOrigins: string[];
+  publicDir: string;
 }
 
 /**
@@ -42,8 +48,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   return {
     port: parsed.data.PORT,
     host: parsed.data.HOST,
-    allowedOrigins: parsed.data.CORS_ALLOWED_ORIGINS.split(",")
-      .map((origin) => origin.trim())
-      .filter((origin) => origin.length > 0),
+    publicDir: parsed.data.PUBLIC_DIR ?? DEFAULT_PUBLIC_DIR,
   };
 }
