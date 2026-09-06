@@ -8,6 +8,47 @@ subscription — using Claude and GitHub Copilot as your engineering team.
 
 ---
 
+## What this day is for
+
+**Demystify AI-assisted software delivery by showing that people direct Claude
+with prompts, architecture, context, tools, and review — not by trusting a
+chatbot to magically write production software.**
+
+You will take a real system from nothing to deployed, and the leverage will turn
+out to be in **specification, context, and review** rather than in clever
+prompting.
+
+### By 5pm you will have
+
+- **Called an MCP tool that returned a live fact your model could not have known
+  from its weights** — the moment "context" stops being an abstraction
+- **Stated when to reach for Chat or Cowork versus a coding agent**, and
+  inspected a plan, a diff, a test result, and a permission decision rather than
+  accepting output blindly
+- **Directed an agent using ADRs**, then had a *second* model attack the design —
+  and seen it catch something real
+- **Pushed your fork through a real pipeline** to a reachable Frank, and asked
+  him about his own environment
+
+### The one thing that must not fail
+
+**Every attendee connects to and calls an MCP server before lunch.** Everything
+else is ambition; that is the floor. It needs Node and five minutes — no cloud,
+no credentials, no pipeline — which is exactly why it is the floor.
+
+### What this is not
+
+- Not a prompt cookbook. A clever prompt does not substitute for architecture,
+  verification, or judgement.
+- Not a production Azure, Kubernetes, or identity course. The classroom
+  deployment **deliberately** trades rigour for a bounded, temporary payoff —
+  and [ADR-006](docs/adr/ADR-006-classroom-credentials.md) says exactly what
+  that costs.
+- Not a promise that skills or subagents dispatch deterministically. They are
+  routing hints to a probabilistic model, and you will see that first-hand.
+
+---
+
 ## Why this course exists
 
 AI coding has crossed a threshold. Agents no longer just autocomplete lines —
