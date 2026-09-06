@@ -1,0 +1,8 @@
+node_modules
+dist
+test
+coverage
+*.log
+.git
+.gitignore
+vitest.config.ts
