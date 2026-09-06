@@ -8,11 +8,11 @@ your agents at them by number (*"implement ADR-003"*).
 | [ADR-000](ADR-000-record-architecture-decisions.md) | Record architecture decisions as ADRs | Accepted |
 | [ADR-001](ADR-001-mcp-server-stack.md) | Frank's stack: TypeScript + official MCP SDK, Streamable HTTP | Accepted |
 | [ADR-002](ADR-002-mcp-tool-conventions.md) | Tool naming, schemas, and the read-only rule | Accepted |
-| [ADR-003](ADR-003-cloudscape-ui.md) | The console: React + Vite + Cloudscape | Accepted — partly superseded by 007 |
+| [ADR-003](ADR-003-cloudscape-ui.md) | The console: React + Vite + Cloudscape | Accepted |
 | [ADR-004](ADR-004-azure-hosting.md) | Hosting: Container Apps (Frank) + Static Web Apps (UI) | Accepted — partly superseded by 006 |
 | [ADR-005](ADR-005-github-actions-deployment.md) | Deployment: GitHub Actions with OIDC to Azure | Accepted — partly superseded by 006 |
 | [ADR-006](ADR-006-classroom-credentials.md) | Classroom credentials + one container (partly supersedes 004, 005) | Proposed |
-| [ADR-007](ADR-007-mcp-endpoint-authentication.md) | MCP endpoint requires caller authentication (partly supersedes 003) | Proposed |
+| [ADR-007](ADR-007-mcp-endpoint-authentication.md) | MCP endpoint requires caller authentication | **Rejected** — see the ADR for what that accepts |
 | ADR-008 | Connect Frank to the GitHub pipeline | *written in class* |
 | ADR-009 | Grant Frank read access to his Azure environment | *written in class* |
 

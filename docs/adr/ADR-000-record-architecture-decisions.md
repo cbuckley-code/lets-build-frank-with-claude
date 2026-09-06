@@ -35,6 +35,11 @@ An ADR is immutable once **Accepted**. To change course, write a new ADR that
 **Supersedes** the old one — wholly, or naming the exact clauses it replaces
 while the rest stays in force.
 
+A decision that is considered and **declined** is recorded as **Rejected**, not
+deleted. The reasoning is the point: a rejected ADR tells a future reader what
+was weighed and what the alternative cost, which is exactly what stops the same
+argument being had twice.
+
 One narrow exception: the **Status line** of a superseded ADR may be updated to
 record that it was superseded, and by which ADR. That is lifecycle metadata, not
 a rewrite of the decision. Body text, date, rationale, and consequences stay

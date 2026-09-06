@@ -1,6 +1,6 @@
 # ADR-NNN: <short, decisive title>
 
-**Status:** Proposed | Accepted | Superseded by ADR-XXX
+**Status:** Proposed | Accepted | Rejected | Superseded by ADR-XXX
 **Date:** YYYY-MM
 
 ## Context

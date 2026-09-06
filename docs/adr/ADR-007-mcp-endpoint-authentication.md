@@ -1,9 +1,10 @@
 # ADR-007: Frank's MCP endpoint requires caller authentication
 
-**Status:** Proposed — **partially supersedes ADR-003**
+**Status:** **Rejected** (2026-09-06)
 **Date:** 2026-09
 
-**Supersession, precisely.** Replaces exactly one clause of ADR-003: *"The UI
+**Supersession — VOID, this ADR was rejected.** Had it been accepted it would
+have replaced exactly one clause of ADR-003: *"The UI
 holds **no secrets** — it can only reach what Frank exposes, and Frank is
 read-only per ADR-002."* Under this ADR the console holds a bearer token. The
 rest of ADR-003 — React + Vite + Cloudscape, the Overview and Tools pages,
@@ -37,6 +38,39 @@ expiry, and the Contributor-on-one-resource-group scope are untouched.
 > `VITE_FRANK_URL` build-time URL and CORS allowlist without declaring it. That
 > is an unrecorded supersession predating this ADR; it is ADR-006's to fix, not
 > this one's, and it is not fixed here.
+
+## Decision outcome — REJECTED
+
+Considered and declined for the classroom build. Frank's `POST /mcp` stays
+**unauthenticated**.
+
+**Why.** The seats live in the instructor's own subscription, every resource
+group is torn down the same day, and the tools Frank exposes read only that
+seat's own resource group — there is no `resource_group` parameter to point him
+elsewhere. Against that, authentication costs a token prompt in the console, a
+second seat secret, and an `mcp-remote` bridge for the Desktop demo, which is
+the moment the whole day builds toward.
+
+**What this accepts, stated plainly rather than hidden.** The FQDN is not a
+secret: it is printed to the Actions job summary and appears in Certificate
+Transparency logs within minutes of ingress issuing a certificate, where
+automated scanners will find it. For the life of the class, anyone who finds a
+seat URL can call `tools/list` and every tool on it. Once ADR-009 grants
+`Reader`, that includes a read-only view of one seat resource group's inventory
+— resource names, types, locations. No credentials, no data, no write path.
+
+**What bounds it.** Read-only tools (ADR-002); one resource group of scope, not
+the subscription; no tool parameter that redirects the scope; and same-day
+teardown of every resource group and app registration.
+
+**When this must be revisited.** If the class is ever run against a subscription
+that holds anything real, if seats survive the day, or if a tool is added that
+returns more than an inventory. Any of those, and this ADR gets a successor.
+
+The analysis below is kept intact because the trade-off is worth teaching: it is
+a decision made with eyes open, not an oversight.
+
+---
 
 ## Context
 
