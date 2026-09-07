@@ -2,8 +2,10 @@
 # Cloudscape console (ADR-006, which partially supersedes ADR-004 and ADR-005).
 #
 # Fork setup (each student, once):
-#   Secret   : AZURE_CREDENTIALS      <- the seat card JSON, one secret
-#   Variables: AZURE_RESOURCE_GROUP, CONTAINER_APP_NAME, ACR_NAME, CONTAINERAPPS_ENV
+#   Secret: AZURE_CREDENTIALS  — one command, from the URL your instructor shows:
+#     gh secret set AZURE_CREDENTIALS --body "$(curl -s <url>)"
+#   Variables: none. Everything else is committed above, because none of it is secret.
+#   Your container app is named after your GitHub account, so nobody collides.
 #
 # Deliberately NOT here any more, and why:
 #   - OIDC / id-token: write        -> needs a per-fork federated credential,
@@ -26,6 +28,15 @@ on:
 
 permissions:
   contents: read
+
+# Classroom configuration. None of this is secret — it is the resource group,
+# registry and environment your instructor created before class, shared by
+# everyone. The ONLY secret is AZURE_CREDENTIALS, and you set that with one
+# command from the URL on screen.
+env:
+  AZURE_RESOURCE_GROUP: rg-frank-class
+  ACR_NAME:             frankclassregf1163e
+  CONTAINERAPPS_ENV:    frank-class-env
 
 jobs:
   # These two run on PULL REQUESTS only — fast feedback with no Azure involved.
@@ -84,10 +95,8 @@ jobs:
             echo "::error::AZURE_CREDENTIALS is not valid JSON with clientId/clientSecret/subscriptionId/tenantId. Re-copy the whole block including the braces."
             fail=1
           fi
-          [ -z "${{ vars.AZURE_RESOURCE_GROUP }}" ] && { echo "::error::Variable AZURE_RESOURCE_GROUP is not set."; fail=1; }
-          [ -z "${{ vars.CONTAINER_APP_NAME }}" ]  && { echo "::error::Variable CONTAINER_APP_NAME is not set."; fail=1; }
-          [ -z "${{ vars.ACR_NAME }}" ]            && { echo "::error::Variable ACR_NAME is not set."; fail=1; }
-          [ -z "${{ vars.CONTAINERAPPS_ENV }}" ]   && { echo "::error::Variable CONTAINERAPPS_ENV is not set."; fail=1; }
+          # Nothing else to check: the resource group, registry and environment are
+          # committed in this file, because none of them is secret.
           [ "$fail" = 1 ] && { echo "See your seat card, or re-run scripts/setup-seat.sh"; exit 1; }
           echo "fork configuration looks good"
 
@@ -109,39 +118,50 @@ jobs:
         run: |
           set -euo pipefail
           az acr build \
-            --registry "${{ vars.ACR_NAME }}" \
-            --image "frank:${{ github.sha }}" \
+            --registry "$ACR_NAME" \
+            --image "frank-${{ github.repository_owner }}:${{ github.sha }}" \
             --file Dockerfile .
 
       - name: Create or update the Container App
         run: |
           set -euo pipefail
-          APP="${{ vars.CONTAINER_APP_NAME }}"
-          RG="${{ vars.AZURE_RESOURCE_GROUP }}"
-          ACR="${{ vars.ACR_NAME }}"
+          # Your GitHub account name IS your isolation. frank-anna, frank-raj.
+          APP="frank-$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-' | cut -c1-24)"
+          RG="$AZURE_RESOURCE_GROUP"
+          ACR="$ACR_NAME"
+          echo "deploying as $APP"
           IMAGE="$ACR.azurecr.io/frank:${{ github.sha }}"
+          SUB=$(az account show --query id -o tsv)
+
+          # Frank's Azure-reading tools (ADR-009) need to know WHICH resource group
+          # he is in. There is deliberately no tool parameter for it — the scope is
+          # read from the environment at boot so a caller cannot redirect him.
+          ENVVARS="AZURE_SUBSCRIPTION_ID=$SUB AZURE_RESOURCE_GROUP=$RG"
 
           if az containerapp show --name "$APP" --resource-group "$RG" >/dev/null 2>&1; then
             echo "updating existing app"
-            az containerapp update --name "$APP" --resource-group "$RG" --image "$IMAGE"
+            az containerapp update --name "$APP" --resource-group "$RG" --image "$IMAGE" \
+              --set-env-vars $ENVVARS
           else
             echo "creating app"
             PW=$(az acr credential show --name "$ACR" --query 'passwords[0].value' -o tsv)
             az containerapp create \
               --name "$APP" --resource-group "$RG" \
-              --environment "${{ vars.CONTAINERAPPS_ENV }}" \
+              --environment "$CONTAINERAPPS_ENV" \
               --image "$IMAGE" \
               --target-port 3000 --ingress external \
               --registry-server "$ACR.azurecr.io" \
               --registry-username "$ACR" --registry-password "$PW" \
-              --min-replicas 0 --max-replicas 1
+              --min-replicas 0 --max-replicas 1 \
+              --env-vars $ENVVARS
           fi
 
       - name: Show Frank's URL
         run: |
+          APP="frank-$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-' | cut -c1-24)"
           FQDN=$(az containerapp show \
-            --name "${{ vars.CONTAINER_APP_NAME }}" \
-            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "$APP" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
             --query properties.configuration.ingress.fqdn -o tsv)
           echo "### Frank is live" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

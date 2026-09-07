@@ -14,12 +14,20 @@ set -euo pipefail
 command -v gh >/dev/null || { echo "GitHub CLI (gh) not found: https://cli.github.com" >&2; exit 1; }
 gh auth status >/dev/null 2>&1 || { echo "Run 'gh auth login' first." >&2; exit 1; }
 
-REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+# Read the ORIGIN remote, not `gh repo view`. In a fork clone that also has an
+# `upstream` remote — which is exactly what `gh repo fork --clone` creates — the
+# gh "base repo" resolves to the PARENT, so `gh repo view` returns the upstream
+# and this script refused to run inside a perfectly good fork.
+ORIGIN_URL="$(git remote get-url origin 2>/dev/null || true)"
+[ -n "$ORIGIN_URL" ] || { echo "No 'origin' remote — are you inside your clone?" >&2; exit 1; }
+REPO="$(printf '%s' "$ORIGIN_URL" | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##')"
 case "$REPO" in
   Buckshot-Technologies/*)
-    echo "You are in the upstream repo, not your fork." >&2
-    echo "Run this inside YOUR fork (gh repo fork ... --clone)." >&2
+    echo "Your 'origin' points at the upstream repo, not your fork." >&2
+    echo "Fork it first:  gh repo fork Buckshot-Technologies/lets-build-frank-with-claude --clone" >&2
     exit 1 ;;
+  */lets-build-frank-with-claude) ;;
+  *) echo "origin is $REPO — that does not look like a fork of the class repo." >&2; exit 1 ;;
 esac
 echo "configuring fork: $REPO"
 
