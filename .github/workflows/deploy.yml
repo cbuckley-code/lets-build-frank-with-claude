@@ -145,10 +145,20 @@ jobs:
           # Frank's Azure-reading tools (ADR-009) need to know WHICH resource group
           # he is in. There is deliberately no tool parameter for it — the scope is
           # read from the environment at boot so a caller cannot redirect him.
-          ENVVARS="AZURE_SUBSCRIPTION_ID=$SUB AZURE_RESOURCE_GROUP=$RG"
+          # Frank reads Azure with the SAME credential that deployed him. That is
+          # only reasonable because this one is public by design (ADR-010) — and it
+          # removes the managed identity and the instructor's Reader handoff, which
+          # is what made ADR-009 unimplementable.
+          CREDS='${{ secrets.AZURE_CREDENTIALS }}'
+          CID=$(printf '%s' "$CREDS" | python3 -c 'import json,sys;print(json.load(sys.stdin)["clientId"])')
+          CSECRET=$(printf '%s' "$CREDS" | python3 -c 'import json,sys;print(json.load(sys.stdin)["clientSecret"])')
+          TEN=$(printf '%s' "$CREDS" | python3 -c 'import json,sys;print(json.load(sys.stdin)["tenantId"])')
+          ENVVARS="AZURE_SUBSCRIPTION_ID=$SUB AZURE_RESOURCE_GROUP=$RG AZURE_CLIENT_ID=$CID AZURE_TENANT_ID=$TEN AZURE_CLIENT_SECRET=secretref:azure-client-secret"
+          SECRETS="azure-client-secret=$CSECRET"
 
           if az containerapp show --name "$APP" --resource-group "$RG" >/dev/null 2>&1; then
             echo "updating existing app"
+            az containerapp secret set --name "$APP" --resource-group "$RG" --secrets $SECRETS -o none
             az containerapp update --name "$APP" --resource-group "$RG" --image "$IMAGE" \
               --set-env-vars $ENVVARS
           else
@@ -162,6 +172,7 @@ jobs:
               --registry-server "$ACR.azurecr.io" \
               --registry-username "$ACR" --registry-password "$PW" \
               --min-replicas 0 --max-replicas 1 \
+              --secrets $SECRETS \
               --env-vars $ENVVARS
           fi
 

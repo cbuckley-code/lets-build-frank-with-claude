@@ -13,6 +13,7 @@ your agents at them by number (*"implement ADR-003"*).
 | [ADR-005](ADR-005-github-actions-deployment.md) | Deployment: GitHub Actions with OIDC to Azure | Accepted — partly superseded by 006 |
 | [ADR-006](ADR-006-classroom-credentials.md) | Classroom credentials + one container (partly supersedes 003, 004, 005) | Proposed |
 | [ADR-007](ADR-007-mcp-endpoint-authentication.md) | MCP endpoint requires caller authentication | **Rejected** — see the ADR for what that accepts |
+| [ADR-010](ADR-010-one-open-credential.md) | One deliberately open classroom credential (supersedes 006's credential model) | Proposed |
 | ADR-008 | Connect Frank to the GitHub pipeline | *written in class* |
 | ADR-009 | Grant Frank read access to his Azure environment | *written in class* |
 

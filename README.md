@@ -149,20 +149,22 @@ claude
 > /init
 ```
 
-Then configure your fork from the **seat card** you were handed
-(see [ADR-006](docs/adr/ADR-006-classroom-credentials.md)):
+Then set the one secret, from the URL your instructor puts on screen
+(see [ADR-010](docs/adr/ADR-010-one-open-credential.md)):
 
 ```bash
-./scripts/setup-seat.sh path/to/seatNN.txt
+gh secret set AZURE_CREDENTIALS --body "$(curl -s <the URL on screen>)"
+git push origin main
 ```
 
-That sets one secret (`AZURE_CREDENTIALS`) and four variables
-(`AZURE_RESOURCE_GROUP`, `CONTAINER_APP_NAME`, `ACR_NAME`, `CONTAINERAPPS_ENV`).
-You can do it by hand in *Settings → Secrets and variables → Actions* instead.
+That is the whole setup. **No variables** — the resource group, registry and
+environment are committed in the workflow, because none of them is secret. Your
+container app is named after your GitHub account, so nobody collides.
 
-> Your seat credential is a **client secret with a two-day expiry**, scoped to
-> **one resource group**. That is a deliberate classroom trade-off, not best
-> practice — ADR-006 says exactly what it costs and why OIDC could not be used.
+> That credential is **deliberately public**, scoped to one resource group in a
+> throwaway subscription, and expires in two days. It is the opposite of good
+> practice and ADR-010 says exactly why that is the right call for one afternoon
+> — and why you must never do it at work.
 
 > **Never** commit credentials to the repo, paste them into prompts, or put them
 > in `CLAUDE.md` or an ADR. Secrets live in GitHub Actions secrets and Azure —
@@ -204,6 +206,7 @@ That's the point of the course.
 | [ADR-005](docs/adr/ADR-005-github-actions-deployment.md) | Deployment: GitHub Actions | Accepted — partly superseded by 006 |
 | [ADR-006](docs/adr/ADR-006-classroom-credentials.md) | Classroom credentials + one container (partly supersedes 003, 004, 005) | Proposed |
 | [ADR-007](docs/adr/ADR-007-mcp-endpoint-authentication.md) | MCP endpoint requires caller authentication | **Rejected** — see the ADR for what that accepts |
+| [ADR-010](docs/adr/ADR-010-one-open-credential.md) | One deliberately open classroom credential | Proposed |
 | ADR-008 | Connect Frank to the GitHub pipeline | **You write this in class** |
 | ADR-009 | Grant Frank read access to his Azure environment | **You write this in class** |
 
