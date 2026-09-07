@@ -114,23 +114,32 @@ jobs:
       # Installing the containerapp extension does NOT help — it calls the same
       # core function. Building and deploying separately avoids that path, and
       # each half fails legibly on its own.
+      # Your GitHub account name IS your isolation: the image, the container app
+      # and the URL all carry it, so nobody collides and nobody is assigned a seat.
+      - name: Work out who you are
+        id: who
+        run: |
+          set -euo pipefail
+          APP="frank-$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-' | cut -c1-24)"
+          echo "app=$APP"                              >> "$GITHUB_OUTPUT"
+          echo "image=$ACR_NAME.azurecr.io/$APP:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          echo "deploying as $APP"
+
       - name: Build the image in ACR
         run: |
           set -euo pipefail
           az acr build \
             --registry "$ACR_NAME" \
-            --image "frank-${{ github.repository_owner }}:${{ github.sha }}" \
+            --image "${{ steps.who.outputs.app }}:${{ github.sha }}" \
             --file Dockerfile .
 
       - name: Create or update the Container App
         run: |
           set -euo pipefail
-          # Your GitHub account name IS your isolation. frank-anna, frank-raj.
-          APP="frank-$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-' | cut -c1-24)"
+          APP="${{ steps.who.outputs.app }}"
           RG="$AZURE_RESOURCE_GROUP"
           ACR="$ACR_NAME"
-          echo "deploying as $APP"
-          IMAGE="$ACR.azurecr.io/frank:${{ github.sha }}"
+          IMAGE="${{ steps.who.outputs.image }}"
           SUB=$(az account show --query id -o tsv)
 
           # Frank's Azure-reading tools (ADR-009) need to know WHICH resource group
@@ -158,9 +167,8 @@ jobs:
 
       - name: Show Frank's URL
         run: |
-          APP="frank-$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-' | cut -c1-24)"
           FQDN=$(az containerapp show \
-            --name "$APP" \
+            --name "${{ steps.who.outputs.app }}" \
             --resource-group "$AZURE_RESOURCE_GROUP" \
             --query properties.configuration.ingress.fqdn -o tsv)
           echo "### Frank is live" >> $GITHUB_STEP_SUMMARY
