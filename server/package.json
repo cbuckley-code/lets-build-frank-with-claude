@@ -17,6 +17,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@azure/arm-resources": "^8.0.0",
+    "@azure/identity": "^4.13.2",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "express": "^5.0.0",
     "zod": "^3.23.8"
