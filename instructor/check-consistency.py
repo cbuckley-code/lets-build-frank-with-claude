@@ -48,9 +48,9 @@ DEAD = [
  ("D-06", r"ADR-008 and ADR-009|[Dd]raft ADR-008",
   "The class writes ADR-009 only. ADR-008 is an unscheduled stretch."),
 ]
-NEG = re.compile(r"\b(no|not|never|without|remove[sd]?|deleted|gone|eliminat\w*|"
-                 r"superseded|no longer|instead of|there is no|dead|used to|"
-                 r"previously|deliberately NOT)\b[\s\S]{0,36}$", re.I)
+NEG = re.compile(r"\b(no|nobody|none|not|never|without|remove[sd]?|deleted|gone|"
+                 r"eliminat\w*|superseded|no longer|instead of|there is no|dead|"
+                 r"used to|previously|deliberately NOT)\b[^.!?\n]{0,150}$", re.I)
 # in a workflow, only the strings a student actually sees
 MSG = re.compile(r"(?:echo|::error::|::notice::|::warning::)[^\n]*")
 
@@ -73,7 +73,7 @@ def main(argv):
         for text, base in chunks(f):
             for dec, pat, fix in DEAD:
                 for m in re.finditer(pat, text):
-                    lead = " ".join(text[max(0, m.start() - 46):m.start()].split())
+                    lead = " ".join(text[max(0, m.start() - 200):m.start()].split())
                     if NEG.search(lead):
                         continue
                     line = base + (text[:m.start()].count("\n") if base else
