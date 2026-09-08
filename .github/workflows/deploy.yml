@@ -34,9 +34,10 @@ permissions:
 # everyone. The ONLY secret is AZURE_CREDENTIALS, and you set that with one
 # command from the URL on screen.
 env:
+  # The only value that has to be right. The registry and the Container Apps
+  # environment are DISCOVERED from this group at deploy time, so a new class
+  # does not mean editing this file — provision the group and go.
   AZURE_RESOURCE_GROUP: rg-frank-class
-  ACR_NAME:             frankclassregf1163e
-  CONTAINERAPPS_ENV:    frank-class-env
 
 jobs:
   # These two run on PULL REQUESTS only — fast feedback with no Azure involved.
@@ -121,15 +122,24 @@ jobs:
         run: |
           set -euo pipefail
           APP="frank-$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-' | cut -c1-24)"
-          echo "app=$APP"                              >> "$GITHUB_OUTPUT"
-          echo "image=$ACR_NAME.azurecr.io/$APP:${{ github.sha }}" >> "$GITHUB_OUTPUT"
-          echo "deploying as $APP"
+
+          # Discover the shared registry and environment your instructor created.
+          ACR=$(az acr list -g "$AZURE_RESOURCE_GROUP" --query "[0].name" -o tsv)
+          ENV=$(az containerapp env list -g "$AZURE_RESOURCE_GROUP" --query "[0].name" -o tsv)
+          [ -n "$ACR" ] || { echo "::error::No container registry in $AZURE_RESOURCE_GROUP. Ask your instructor."; exit 1; }
+          [ -n "$ENV" ] || { echo "::error::No Container Apps environment in $AZURE_RESOURCE_GROUP. Ask your instructor."; exit 1; }
+
+          echo "app=$APP"     >> "$GITHUB_OUTPUT"
+          echo "acr=$ACR"     >> "$GITHUB_OUTPUT"
+          echo "env=$ENV"     >> "$GITHUB_OUTPUT"
+          echo "image=$ACR.azurecr.io/$APP:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          echo "deploying as $APP into $AZURE_RESOURCE_GROUP (acr=$ACR env=$ENV)"
 
       - name: Build the image in ACR
         run: |
           set -euo pipefail
           az acr build \
-            --registry "$ACR_NAME" \
+            --registry "${{ steps.who.outputs.acr }}" \
             --image "${{ steps.who.outputs.app }}:${{ github.sha }}" \
             --file Dockerfile .
 
@@ -138,7 +148,7 @@ jobs:
           set -euo pipefail
           APP="${{ steps.who.outputs.app }}"
           RG="$AZURE_RESOURCE_GROUP"
-          ACR="$ACR_NAME"
+          ACR="${{ steps.who.outputs.acr }}"
           IMAGE="${{ steps.who.outputs.image }}"
           SUB=$(az account show --query id -o tsv)
 
@@ -166,7 +176,7 @@ jobs:
             PW=$(az acr credential show --name "$ACR" --query 'passwords[0].value' -o tsv)
             az containerapp create \
               --name "$APP" --resource-group "$RG" \
-              --environment "$CONTAINERAPPS_ENV" \
+              --environment "${{ steps.who.outputs.env }}" \
               --image "$IMAGE" \
               --target-port 3000 --ingress external \
               --registry-server "$ACR.azurecr.io" \
