@@ -13,9 +13,9 @@ your agents at them by number (*"implement ADR-003"*).
 | [ADR-005](ADR-005-github-actions-deployment.md) | Deployment: GitHub Actions with OIDC to Azure | Accepted — partly superseded by 006 |
 | [ADR-006](ADR-006-classroom-credentials.md) | Classroom credentials + one container (partly supersedes 003, 004, 005) | Accepted |
 | [ADR-007](ADR-007-mcp-endpoint-authentication.md) | MCP endpoint requires caller authentication | **Rejected** — see the ADR for what that accepts |
+| [ADR-009](ADR-009-frank-reads-his-resource-group.md) | Frank reads his own resource group | Accepted |
 | [ADR-010](ADR-010-one-open-credential.md) | One deliberately open classroom credential (supersedes 006's credential model) | Accepted |
 | ADR-008 | Connect Frank to the GitHub pipeline so he can report on builds | *optional stretch — not scheduled* |
-| ADR-009 | Let Frank read what is running in his own resource group | *you write this in class, 2:40* |
 
 New ADR? Copy [`template.md`](template.md), take the next number, and follow the
 workflow in ADR-000: **Claude drafts → Copilot attacks → a human decides.**
