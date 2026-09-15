@@ -18,6 +18,15 @@ Check, in order:
    through. Are rejected alternatives named, with reasons?
 4. **Immutability.** If it modifies an Accepted ADR in place, that is a defect —
    it should supersede instead.
+5. **Still one page?** ADR-000 says one page maximum, and the ADRs written first
+   run 290-375 words. If a draft is much longer, name the paragraphs that are
+   restating another ADR, specifying what belongs in code, or re-arguing a
+   settled point. Say which ones to cut.
+
+Checks 1 to 3 can only ever ask for more words. Check 5 is the counterweight,
+and it is not optional: a reviewer that only adds length is how a one-page
+format turns into a five-page one, a round at a time. When a finding under
+check 1 would add a paragraph, prefer a finding that removes two.
 
 ## Output format — required, verbatim
 

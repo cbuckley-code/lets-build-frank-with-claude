@@ -16,6 +16,10 @@ Follow this repository's process exactly:
      ADR-NNN" needs no follow-up questions.
    - The Consequences must name real costs and the alternatives you rejected,
      with reasons. An ADR with no downsides has not been thought through.
+   - Keep it to one page (ADR-000). ADR-001 through ADR-005 run 290-375 words;
+     match them. **Specific is not the same as long.** If you are writing SDK
+     property names, exact error strings, or function signatures, that belongs
+     in the code the ADR points at, not in the ADR.
 4. If this decision changes anything in an **Accepted** ADR, do not edit that
    file. Say which ADR it supersedes, and mark it in the new ADR's status.
 5. Update the tables in **both** `docs/adr/README.md` and `README.md`.
