@@ -9,15 +9,22 @@
 #   ui/dist  ->  /app/public   served at /
 #   server/  ->  /app/dist     MCP at POST /mcp, health at GET /healthz
 
-# ---- build the console ----------------------------------------------------
+# ---- build the console, if there is one -----------------------------------
+# The console is optional (ADR-003): it is built late in the class, and Frank
+# must deploy and serve MCP long before it exists. `app.ts` already handles an
+# absent console by saying so at `/`, so the only thing that has to tolerate it
+# is this stage. An empty ui/ yields an empty dist and a Frank with no console.
 FROM node:22-slim AS ui-build
 WORKDIR /build/ui
-COPY ui/package.json ui/package-lock.json ./
-RUN npm ci
 COPY ui/ ./
 # Tests run here, not only in Actions. On main this image build is the single
 # build AND the test gate — a red suite fails the build and nothing deploys.
-RUN npm test && npm run build
+RUN if [ -f package.json ]; then \
+      npm ci && npm test && npm run build; \
+    else \
+      echo "no console yet (ADR-003) - Frank will serve MCP without one"; \
+      mkdir -p dist; \
+    fi
 
 # ---- build Frank ----------------------------------------------------------
 FROM node:22-slim AS server-build
