@@ -12,6 +12,7 @@ export const TOOL_NAME_PATTERN = new RegExp(`^(${ALLOWED_VERBS.join('|')})_[a-z]
 /** Every tool result carries a human-readable summary plus typed detail fields. */
 export type ToolOutput = { summary: string } & Record<string, unknown>;
 
+
 export interface FrankTool<Shape extends z.ZodRawShape = z.ZodRawShape> {
   name: string;
   description: string;
@@ -79,6 +80,17 @@ export async function runTool(tool: FrankTool, input: unknown): Promise<CallTool
       isError: true,
     };
   }
+}
+
+/**
+ * Widen a tool to the erased `FrankTool` the list holds. Each tool keeps its
+ * exact input type where it is defined; a mixed list cannot, because a handler
+ * taking `{ name, type }` is not assignable to one taking an open record. The
+ * SDK validates against `inputSchema` before `runTool` calls any handler, so
+ * this loses type information, not safety.
+ */
+export function erase<Shape extends z.ZodRawShape>(tool: FrankTool<Shape>): FrankTool {
+  return tool as unknown as FrankTool;
 }
 
 export function registerTools(server: McpServer, tools: readonly FrankTool[]): void {
