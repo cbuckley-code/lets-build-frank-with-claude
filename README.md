@@ -99,7 +99,7 @@ draft, and deploy it. One decision end to end beats two half-written.
 |---|---|
 | **GitHub account** | You'll fork this repo and run its Actions pipeline |
 | **GitHub Copilot subscription** | Powers the Copilot CLI, our second agent |
-| **Nothing from Azure** | No subscription, no credentials, no API keys. Your instructor puts one **command** on screen; you run it, and it pulls a short-lived credential straight into your fork's secrets ([ADR-010](docs/adr/ADR-010-one-open-credential.md)) |
+| **Nothing from Azure** | No subscription, no credentials, no API keys — and nothing to set up. The pipeline fetches a short-lived classroom credential when it deploys ([ADR-010](docs/adr/ADR-010-one-open-credential.md)) |
 | **Claude account** | Sign-in for Claude Desktop, Claude Code, and mobile |
 
 ### Installed on your laptop
@@ -168,17 +168,18 @@ claude
 > **You do not need a paid GitHub plan.** Actions is free and unmetered on public
 > repositories, and your fork of this public repo is public. Leave it that way.
 
-Then set the one secret. Your instructor puts this command on screen — the URL
-is the part that changes (see [ADR-010](docs/adr/ADR-010-one-open-credential.md)):
+Then push. That is the whole setup:
 
 ```bash
-gh secret set AZURE_CREDENTIALS --body "$(curl -s <the URL on screen>)"
 git push origin main
 ```
 
-That is the whole setup. **No variables** — the resource group, registry and
-environment are committed in the workflow, because none of them is secret. Your
-container app is named after your GitHub account, so nobody collides.
+**No secrets, no variables, no commands from the screen.** The pipeline fetches
+the classroom credential itself (see
+[ADR-010](docs/adr/ADR-010-one-open-credential.md)), and the resource group,
+registry and environment are committed in the workflow because none of them is
+secret. Your container app is named after your GitHub account, so nobody
+collides.
 
 > That credential is **deliberately public**, scoped to one resource group in a
 > throwaway subscription, and expires in two days. It is the opposite of good
